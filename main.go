@@ -38,14 +38,17 @@ func main () {
 	mux.Handle("/app/", http.StripPrefix("/app",
 		apiCfg.middlewareMetricsInc(http.FileServer(fs)),
 	))
-	mux.Handle("/app/assets/", http.StripPrefix("/app/assets/", http.FileServer(http.Dir("./assets"))))
-	mux.HandleFunc("GET /healthz", health)
-	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/app/assets/", http.StripPrefix("/app/assets/",
+		apiCfg.middlewareMetricsInc(http.FileServer(http.Dir("./assets"))),
+	))
+
+	mux.HandleFunc("GET /api/healthz", health)
+	mux.HandleFunc("GET /api/metrics", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(fmt.Sprintf("Hits: %d", apiCfg.filerserverHists.Load())))
 	})
-	mux.HandleFunc("POST /reset", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("POST /api/reset", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		apiCfg.filerserverHists.Store(0)
